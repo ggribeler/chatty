@@ -66,17 +66,14 @@ export default function Setup() {
 
   const handleLogin = useCallback(() => {
     window.FB.login(
-      async (response) => {
+      (response) => {
         if (response.authResponse?.code && signupDataRef.current) {
-          try {
-            await api.completeSignup({
-              code: response.authResponse.code,
-              ...signupDataRef.current,
-            });
-            navigate('/inbox');
-          } catch (error) {
-            console.error('Signup failed:', error);
-          }
+          api.completeSignup({
+            code: response.authResponse.code,
+            ...signupDataRef.current,
+          })
+            .then(() => navigate('/inbox'))
+            .catch((error) => console.error('Signup failed:', error));
         }
       },
       {
