@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import webhookRoutes from './routes/webhook';
 import authRoutes from './routes/auth';
 import accountRoutes from './routes/account';
+import conversationsRoutes from './routes/conversations';
 
 dotenv.config();
 
@@ -20,6 +21,7 @@ app.get('/health', (_req, res) => {
 app.use('/', webhookRoutes);
 app.use('/', authRoutes);
 app.use('/', accountRoutes);
+app.use('/', conversationsRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
