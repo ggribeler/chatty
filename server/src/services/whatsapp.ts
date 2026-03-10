@@ -1,76 +1,99 @@
 const GRAPH_API_URL = 'https://graph.facebook.com/v22.0';
 
 export async function exchangeCodeForToken(code: string): Promise<string> {
-  const response = await fetch(
-    `${GRAPH_API_URL}/oauth/access_token` +
+  console.log('[whatsapp.exchangeCodeForToken] code:', code);
+  const url = `${GRAPH_API_URL}/oauth/access_token` +
     `?client_id=${process.env.META_APP_ID}` +
     `&client_secret=${process.env.META_APP_SECRET}` +
-    `&code=${code}`
-  );
+    `&code=${code}`;
+  console.log('[whatsapp.exchangeCodeForToken] URL:', url);
+
+  const response = await fetch(url);
+  console.log('[whatsapp.exchangeCodeForToken] response status:', response.status);
 
   if (!response.ok) {
     const error = await response.text();
+    console.log('[whatsapp.exchangeCodeForToken] error response:', error);
     throw new Error(`Token exchange failed: ${error}`);
   }
 
   const data = (await response.json()) as { access_token: string };
+  console.log('[whatsapp.exchangeCodeForToken] access_token:', data.access_token);
   return data.access_token;
 }
 
 export async function subscribeApp(wabaId: string, accessToken: string): Promise<void> {
-  const response = await fetch(
-    `${GRAPH_API_URL}/${wabaId}/subscribed_apps`,
-    {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${accessToken}` },
-    }
-  );
+  const url = `${GRAPH_API_URL}/${wabaId}/subscribed_apps`;
+  console.log('[whatsapp.subscribeApp] wabaId:', wabaId);
+  console.log('[whatsapp.subscribeApp] URL:', url);
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+  console.log('[whatsapp.subscribeApp] response status:', response.status);
 
   if (!response.ok) {
     const error = await response.text();
+    console.log('[whatsapp.subscribeApp] error response:', error);
     throw new Error(`App subscription failed: ${error}`);
   }
+
+  const body = await response.json();
+  console.log('[whatsapp.subscribeApp] response body:', JSON.stringify(body));
 }
 
 export async function registerPhoneNumber(phoneNumberId: string, accessToken: string): Promise<void> {
-  const response = await fetch(
-    `${GRAPH_API_URL}/${phoneNumberId}/register`,
-    {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        messaging_product: 'whatsapp',
-        pin: '123456',
-      }),
-    }
-  );
+  const url = `${GRAPH_API_URL}/${phoneNumberId}/register`;
+  const requestBody = {
+    messaging_product: 'whatsapp',
+    pin: '123456',
+  };
+  console.log('[whatsapp.registerPhoneNumber] phoneNumberId:', phoneNumberId);
+  console.log('[whatsapp.registerPhoneNumber] URL:', url);
+  console.log('[whatsapp.registerPhoneNumber] request body:', JSON.stringify(requestBody));
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(requestBody),
+  });
+  console.log('[whatsapp.registerPhoneNumber] response status:', response.status);
 
   if (!response.ok) {
     const error = await response.text();
+    console.log('[whatsapp.registerPhoneNumber] error response:', error);
     throw new Error(`Phone registration failed: ${error}`);
   }
+
+  const body = await response.json();
+  console.log('[whatsapp.registerPhoneNumber] response body:', JSON.stringify(body));
 }
 
 export async function getPhoneNumberDetails(
   phoneNumberId: string,
   accessToken: string
 ): Promise<{ displayPhoneNumber: string }> {
-  const response = await fetch(
-    `${GRAPH_API_URL}/${phoneNumberId}?fields=display_phone_number`,
-    {
-      headers: { Authorization: `Bearer ${accessToken}` },
-    }
-  );
+  const url = `${GRAPH_API_URL}/${phoneNumberId}?fields=display_phone_number`;
+  console.log('[whatsapp.getPhoneNumberDetails] phoneNumberId:', phoneNumberId);
+  console.log('[whatsapp.getPhoneNumberDetails] URL:', url);
+
+  const response = await fetch(url, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+  console.log('[whatsapp.getPhoneNumberDetails] response status:', response.status);
 
   if (!response.ok) {
     const error = await response.text();
+    console.log('[whatsapp.getPhoneNumberDetails] error response:', error);
     throw new Error(`Phone number fetch failed: ${error}`);
   }
 
   const data = (await response.json()) as { display_phone_number: string };
+  console.log('[whatsapp.getPhoneNumberDetails] response body:', JSON.stringify(data));
   return { displayPhoneNumber: data.display_phone_number };
 }
 
@@ -80,28 +103,38 @@ export async function sendTextMessage(
   to: string,
   text: string
 ): Promise<string> {
-  const response = await fetch(
-    `${GRAPH_API_URL}/${phoneNumberId}/messages`,
-    {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        messaging_product: 'whatsapp',
-        to,
-        type: 'text',
-        text: { body: text },
-      }),
-    }
-  );
+  const url = `${GRAPH_API_URL}/${phoneNumberId}/messages`;
+  const requestBody = {
+    messaging_product: 'whatsapp',
+    to,
+    type: 'text',
+    text: { body: text },
+  };
+  console.log('[whatsapp.sendTextMessage] phoneNumberId:', phoneNumberId);
+  console.log('[whatsapp.sendTextMessage] to:', to);
+  console.log('[whatsapp.sendTextMessage] text:', text);
+  console.log('[whatsapp.sendTextMessage] URL:', url);
+  console.log('[whatsapp.sendTextMessage] request body:', JSON.stringify(requestBody));
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(requestBody),
+  });
+  console.log('[whatsapp.sendTextMessage] response status:', response.status);
 
   if (!response.ok) {
     const error = await response.text();
+    console.log('[whatsapp.sendTextMessage] error response:', error);
     throw new Error(`Send message failed: ${error}`);
   }
 
   const data = (await response.json()) as { messages: { id: string }[] };
-  return data.messages[0].id;
+  console.log('[whatsapp.sendTextMessage] response body:', JSON.stringify(data));
+  const waMessageId = data.messages[0].id;
+  console.log('[whatsapp.sendTextMessage] waMessageId:', waMessageId);
+  return waMessageId;
 }

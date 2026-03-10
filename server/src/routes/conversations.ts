@@ -25,6 +25,7 @@ router.get('/api/conversations', async (_req: Request, res: Response) => {
       lastMessage: c.messages[0]?.content || null,
     }));
 
+    console.log('[conversations.GET] returning', result.length, 'conversations');
     res.json(result);
   } catch (error) {
     console.error('Conversations fetch error:', error);
@@ -42,6 +43,7 @@ router.get('/api/conversations/:id/messages', async (req: Request<{ id: string }
       orderBy: { timestamp: 'asc' },
     });
 
+    console.log('[conversations.GET messages] conversationId:', conversationId, 'message count:', messages.length);
     res.json(messages);
   } catch (error) {
     console.error('Messages fetch error:', error);
@@ -54,6 +56,7 @@ router.post('/api/conversations/:id/messages', async (req: Request<{ id: string 
   try {
     const conversationId = parseInt(req.params.id);
     const { content } = req.body;
+    console.log('[conversations.POST message] conversationId:', conversationId, 'content:', content);
 
     if (!content) {
       res.status(400).json({ error: 'content is required' });
@@ -84,6 +87,7 @@ router.post('/api/conversations/:id/messages', async (req: Request<{ id: string 
       conversation.waId,
       content
     );
+    console.log('[conversations.POST message] waMessageId:', waMessageId);
 
     // Store outbound message
     const message = await prisma.message.create({
@@ -96,6 +100,7 @@ router.post('/api/conversations/:id/messages', async (req: Request<{ id: string 
         timestamp: new Date(),
       },
     });
+    console.log('[conversations.POST message] stored message:', JSON.stringify(message));
 
     // Update conversation's last message time
     await prisma.conversation.update({

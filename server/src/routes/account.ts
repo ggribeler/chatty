@@ -8,10 +8,12 @@ router.get('/api/account', async (_req: Request, res: Response) => {
     const account = await prisma.account.findFirst();
 
     if (!account) {
+      console.log('[account.GET] no account found');
       res.json({ exists: false });
       return;
     }
 
+    console.log('[account.GET] account found:', JSON.stringify(account));
     res.json({
       exists: true,
       id: account.id,

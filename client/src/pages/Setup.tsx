@@ -23,9 +23,17 @@ export default function Setup() {
     phoneNumberId: string;
   } | null>(null);
 
+  // Log env vars on mount
+  useEffect(() => {
+    console.log('[Setup] VITE_META_APP_ID:', import.meta.env.VITE_META_APP_ID);
+    console.log('[Setup] VITE_EMBEDDED_SIGNUP_CONFIG_ID:', import.meta.env.VITE_EMBEDDED_SIGNUP_CONFIG_ID);
+  }, []);
+
   // Listen for WA_EMBEDDED_SIGNUP event
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
+      console.log('[Setup] message event — origin:', event.origin, 'data type:', typeof event.data);
+
       if (
         event.origin !== 'https://www.facebook.com' &&
         event.origin !== 'https://web.facebook.com'
@@ -37,6 +45,7 @@ export default function Setup() {
         const data = JSON.parse(event.data);
         if (data.type === 'WA_EMBEDDED_SIGNUP') {
           const { business_id, waba_id, phone_number_id } = data.data;
+          console.log('[Setup] WA_EMBEDDED_SIGNUP data — businessId:', business_id, 'wabaId:', waba_id, 'phoneNumberId:', phone_number_id);
           signupDataRef.current = {
             businessId: business_id,
             wabaId: waba_id,
@@ -55,25 +64,36 @@ export default function Setup() {
   // Initialize Facebook SDK
   useEffect(() => {
     window.fbAsyncInit = () => {
+      console.log('[Setup] FB SDK initializing...');
       window.FB.init({
         appId: import.meta.env.VITE_META_APP_ID,
         cookie: true,
         xfbml: true,
         version: 'v22.0',
       });
+      console.log('[Setup] FB SDK initialized');
     };
   }, []);
 
   const handleLogin = useCallback(() => {
+    console.log('[Setup] handleLogin called');
     window.FB.login(
       (response) => {
+        console.log('[Setup] FB.login response — has authResponse:', !!response.authResponse, 'has code:', !!response.authResponse?.code);
+        console.log('[Setup] FB.login full response:', JSON.stringify(response));
         if (response.authResponse?.code && signupDataRef.current) {
+          console.log('[Setup] calling completeSignup...');
           api.completeSignup({
             code: response.authResponse.code,
             ...signupDataRef.current,
           })
-            .then(() => navigate('/inbox'))
-            .catch((error) => console.error('Signup failed:', error));
+            .then(() => {
+              console.log('[Setup] completeSignup succeeded, navigating to /inbox');
+              navigate('/inbox');
+            })
+            .catch((error) => {
+              console.error('[Setup] completeSignup failed:', error);
+            });
         }
       },
       {

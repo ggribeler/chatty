@@ -8,6 +8,15 @@ import conversationsRoutes from './routes/conversations';
 
 dotenv.config();
 
+console.log('=== Chatty Server Starting ===');
+console.log('Environment variables:');
+console.log('  DATABASE_URL:', process.env.DATABASE_URL);
+console.log('  META_APP_ID:', process.env.META_APP_ID);
+console.log('  META_APP_SECRET:', process.env.META_APP_SECRET);
+console.log('  WEBHOOK_VERIFY_TOKEN:', process.env.WEBHOOK_VERIFY_TOKEN);
+console.log('  PORT:', process.env.PORT);
+console.log('==============================');
+
 const app = express();
 const PORT = process.env.PORT || 3001;
 

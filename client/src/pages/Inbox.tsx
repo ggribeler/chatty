@@ -14,7 +14,10 @@ export default function Inbox() {
   // Poll conversations every 3 seconds
   usePolling(
     useCallback(() => {
-      api.getConversations().then(setConversations).catch(console.error);
+      api.getConversations().then((data) => {
+        console.log('[Inbox] conversation poll — count:', data.length);
+        setConversations(data);
+      }).catch(console.error);
     }, []),
     3000
   );
@@ -23,19 +26,24 @@ export default function Inbox() {
   usePolling(
     useCallback(() => {
       if (selectedId) {
-        api.getMessages(selectedId).then(setMessages).catch(console.error);
+        api.getMessages(selectedId).then((data) => {
+          console.log('[Inbox] message poll — conversationId:', selectedId, 'count:', data.length);
+          setMessages(data);
+        }).catch(console.error);
       }
     }, [selectedId]),
     3000
   );
 
   const handleSelect = (id: number) => {
+    console.log('[Inbox] conversation selected:', id);
     setSelectedId(id);
     api.getMessages(id).then(setMessages).catch(console.error);
   };
 
   const handleSend = async (content: string) => {
     if (!selectedId) return;
+    console.log('[Inbox] send attempt — conversationId:', selectedId, 'content:', content);
 
     // Optimistic append
     const optimisticMessage: Message = {
@@ -52,8 +60,9 @@ export default function Inbox() {
 
     try {
       await api.sendMessage(selectedId, content);
+      console.log('[Inbox] send success — conversationId:', selectedId);
     } catch (error) {
-      console.error('Send failed:', error);
+      console.error('[Inbox] send failed:', error);
     }
   };
 
