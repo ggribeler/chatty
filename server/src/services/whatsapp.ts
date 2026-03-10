@@ -1,4 +1,4 @@
-const GRAPH_API_URL = 'https://graph.facebook.com/v22.0';
+const GRAPH_API_URL = 'https://graph.facebook.com/v25.0';
 
 export async function exchangeCodeForToken(code: string): Promise<string> {
   console.log('[whatsapp.exchangeCodeForToken] code:', code);
