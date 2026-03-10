@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import webhookRoutes from './routes/webhook';
 import authRoutes from './routes/auth';
+import accountRoutes from './routes/account';
 
 dotenv.config();
 
@@ -18,6 +19,7 @@ app.get('/health', (_req, res) => {
 
 app.use('/', webhookRoutes);
 app.use('/', authRoutes);
+app.use('/', accountRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
