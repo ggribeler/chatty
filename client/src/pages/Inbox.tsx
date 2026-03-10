@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
-import { api, Conversation, Message } from '../api/client';
+import { api } from '../api/client';
+import type { Conversation, Message } from '../api/client';
 import { usePolling } from '../hooks/usePolling';
 import ConversationList from '../components/ConversationList';
 import MessageThread from '../components/MessageThread';

@@ -1,4 +1,4 @@
-import { Message } from '../api/client';
+import type { Message } from '../api/client';
 
 interface Props {
   messages: Message[];
