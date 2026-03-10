@@ -1,0 +1,46 @@
+databases:
+  - name: chatty-db
+    plan: free
+    databaseName: chatty
+    user: chatty
+
+services:
+  - type: web
+    name: chatty-server
+    runtime: node
+    plan: free
+    rootDir: server
+    buildCommand: npm install && npx prisma generate && npx prisma db push && tsc
+    startCommand: node dist/index.js
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: chatty-db
+          property: connectionString
+      - key: META_APP_ID
+        sync: false
+      - key: META_APP_SECRET
+        sync: false
+      - key: WEBHOOK_VERIFY_TOKEN
+        sync: false
+      - key: NODE_VERSION
+        value: 20
+
+  - type: web
+    name: chatty-client
+    runtime: static
+    plan: free
+    rootDir: client
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_META_APP_ID
+        sync: false
+      - key: VITE_EMBEDDED_SIGNUP_CONFIG_ID
+        sync: false
+      - key: VITE_API_URL
+        sync: false
