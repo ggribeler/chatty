@@ -110,7 +110,7 @@ const styles = {
   } as const,
 } as const;
 
-export default function Setup() {
+export default function Setup({ onSignupComplete }: { onSignupComplete: () => void }) {
   const navigate = useNavigate();
   const [buttonHovered, setButtonHovered] = useState(false);
   const signupDataRef = useRef<{
@@ -192,6 +192,7 @@ export default function Setup() {
           })
             .then(() => {
               console.log('[Setup] completeSignup succeeded, navigating to /inbox');
+              onSignupComplete();
               navigate('/inbox');
             })
             .catch((error) => {
@@ -210,7 +211,7 @@ export default function Setup() {
         },
       }
     );
-  }, [navigate]);
+  }, [navigate, onSignupComplete]);
 
   return (
     <div style={styles.page}>

@@ -20,7 +20,7 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={accountExists ? <Navigate to="/inbox" /> : <Setup />} />
+        <Route path="/" element={accountExists ? <Navigate to="/inbox" /> : <Setup onSignupComplete={() => setAccountExists(true)} />} />
         <Route path="/inbox" element={accountExists ? <Inbox /> : <Navigate to="/" />} />
       </Routes>
     </BrowserRouter>
