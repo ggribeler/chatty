@@ -67,7 +67,15 @@ export default function Inbox() {
   };
 
   return (
-    <div style={{ display: 'flex', height: '100vh' }}>
+    <div
+      style={{
+        display: 'flex',
+        height: '100vh',
+        background: 'linear-gradient(135deg, #0a0f1c 0%, #1a1f3a 50%, #0d2137 100%)',
+        fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+        color: '#ffffff',
+      }}
+    >
       <ConversationList
         conversations={conversations}
         selectedId={selectedId}
@@ -76,12 +84,85 @@ export default function Inbox() {
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
         {selectedId ? (
           <>
+            <div
+              style={{
+                padding: '16px 24px',
+                borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+                background: 'rgba(255, 255, 255, 0.02)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+              }}
+            >
+              <div
+                style={{
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '50%',
+                  background: 'linear-gradient(135deg, #25D366, #128C7E)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '14px',
+                  fontWeight: 600,
+                }}
+              >
+                {(conversations.find((c) => c.id === selectedId)?.profileName ||
+                  conversations.find((c) => c.id === selectedId)?.waId ||
+                  '?'
+                ).charAt(0).toUpperCase()}
+              </div>
+              <div>
+                <div style={{ fontWeight: 600, fontSize: '15px' }}>
+                  {conversations.find((c) => c.id === selectedId)?.profileName ||
+                    conversations.find((c) => c.id === selectedId)?.waId}
+                </div>
+                <div style={{ fontSize: '12px', color: 'rgba(255, 255, 255, 0.4)' }}>
+                  WhatsApp
+                </div>
+              </div>
+            </div>
             <MessageThread messages={messages} />
             <MessageInput onSend={handleSend} />
           </>
         ) : (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 1, color: '#999' }}>
-            Select a conversation
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flex: 1,
+              flexDirection: 'column',
+              gap: '16px',
+            }}
+          >
+            <div
+              style={{
+                width: '72px',
+                height: '72px',
+                borderRadius: '50%',
+                background: 'rgba(255, 255, 255, 0.05)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <svg
+                width="32"
+                height="32"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="rgba(255, 255, 255, 0.2)"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+              </svg>
+            </div>
+            <div style={{ color: 'rgba(255, 255, 255, 0.3)', fontSize: '15px' }}>
+              Select a conversation to start messaging
+            </div>
           </div>
         )}
       </div>
