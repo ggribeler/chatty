@@ -51,7 +51,9 @@ export default function Inbox() {
       conversationId: selectedId,
       waMessageId: `temp-${Date.now()}`,
       direction: 'outbound',
+      type: 'text',
       content,
+      metadata: null,
       status: 'sending',
       timestamp: new Date().toISOString(),
       createdAt: new Date().toISOString(),
@@ -123,7 +125,7 @@ export default function Inbox() {
               </div>
             </div>
             <MessageThread messages={messages} />
-            <MessageInput onSend={handleSend} />
+            <MessageInput conversationId={selectedId} onSend={handleSend} />
           </>
         ) : (
           <div
