@@ -41,16 +41,44 @@ router.post('/webhook', async (req: Request, res: Response) => {
         // Handle incoming messages
         if (value.messages) {
           for (const message of value.messages) {
-            if (message.type !== 'text') {
-              console.log('[webhook.POST] skipping non-text message, type:', message.type);
-              continue;
-            }
-
             const contactInfo = value.contacts?.[0];
             const waId = message.from;
             const profileName = contactInfo?.profile?.name || null;
 
-            console.log('[webhook.POST] incoming message — waId:', waId, 'messageId:', message.id, 'type:', message.type, 'content:', message.text.body);
+            let msgContent: string;
+            let msgType: 'text' | 'button_reply' | 'list_reply';
+            let msgMetadata: any = null;
+
+            switch (message.type) {
+              case 'text':
+                msgContent = message.text.body;
+                msgType = 'text';
+                break;
+              case 'interactive':
+                if (message.interactive?.type === 'button_reply') {
+                  msgContent = message.interactive.button_reply.title;
+                  msgType = 'button_reply';
+                  msgMetadata = message.interactive.button_reply;
+                } else if (message.interactive?.type === 'list_reply') {
+                  msgContent = message.interactive.list_reply.title;
+                  msgType = 'list_reply';
+                  msgMetadata = message.interactive.list_reply;
+                } else {
+                  console.log('[webhook.POST] skipping unknown interactive type:', message.interactive?.type);
+                  continue;
+                }
+                break;
+              case 'button':
+                msgContent = message.button?.text || '';
+                msgType = 'button_reply';
+                msgMetadata = message.button;
+                break;
+              default:
+                console.log('[webhook.POST] skipping unsupported message type:', message.type);
+                continue;
+            }
+
+            console.log('[webhook.POST] incoming message — waId:', waId, 'messageId:', message.id, 'type:', msgType, 'content:', msgContent);
 
             // Upsert conversation
             const conversation = await prisma.conversation.upsert({
@@ -75,7 +103,9 @@ router.post('/webhook', async (req: Request, res: Response) => {
                 conversationId: conversation.id,
                 waMessageId: message.id,
                 direction: 'inbound',
-                content: message.text.body,
+                type: msgType,
+                content: msgContent,
+                metadata: msgMetadata,
                 timestamp: new Date(parseInt(message.timestamp) * 1000),
               },
             });
