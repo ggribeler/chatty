@@ -1,8 +1,29 @@
 import { useEffect, useRef } from 'react';
 import type { Message } from '../api/client';
+import {
+  TemplateMessageBubble,
+  InteractiveMessageBubble,
+  ButtonReplyBubble,
+  ListReplyBubble,
+} from './MessageBubbles';
 
 interface Props {
   messages: Message[];
+}
+
+function renderMessageContent(m: Message) {
+  switch (m.type) {
+    case 'template':
+      return <TemplateMessageBubble message={m} />;
+    case 'interactive':
+      return <InteractiveMessageBubble message={m} />;
+    case 'button_reply':
+      return <ButtonReplyBubble message={m} />;
+    case 'list_reply':
+      return <ListReplyBubble message={m} />;
+    default:
+      return <div>{m.content}</div>;
+  }
 }
 
 export default function MessageThread({ messages }: Props) {
@@ -53,7 +74,7 @@ export default function MessageThread({ messages }: Props) {
                   : '0 1px 4px rgba(0, 0, 0, 0.15)',
               }}
             >
-              <div>{m.content}</div>
+              {renderMessageContent(m)}
             </div>
             <div
               style={{
