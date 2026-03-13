@@ -138,3 +138,78 @@ export async function sendTextMessage(
   console.log('[whatsapp.sendTextMessage] waMessageId:', waMessageId);
   return waMessageId;
 }
+
+export async function getMessageTemplates(
+  wabaId: string,
+  accessToken: string
+): Promise<any[]> {
+  const url = `${GRAPH_API_URL}/${wabaId}/message_templates?fields=id,name,language,status,category,components`;
+  console.log('[whatsapp.getMessageTemplates] wabaId:', wabaId);
+  console.log('[whatsapp.getMessageTemplates] URL:', url);
+
+  const response = await fetch(url, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+  console.log('[whatsapp.getMessageTemplates] response status:', response.status);
+
+  if (!response.ok) {
+    const error = await response.text();
+    console.log('[whatsapp.getMessageTemplates] error response:', error);
+    throw new Error(`Fetch templates failed: ${error}`);
+  }
+
+  const data = (await response.json()) as { data: any[] };
+  console.log('[whatsapp.getMessageTemplates] total templates:', data.data.length);
+  const approved = data.data.filter((t: any) => t.status === 'APPROVED');
+  console.log('[whatsapp.getMessageTemplates] approved templates:', approved.length);
+  return approved;
+}
+
+export async function sendTemplateMessage(
+  phoneNumberId: string,
+  accessToken: string,
+  to: string,
+  templateName: string,
+  languageCode: string,
+  components?: any[]
+): Promise<string> {
+  const url = `${GRAPH_API_URL}/${phoneNumberId}/messages`;
+  const requestBody: any = {
+    messaging_product: 'whatsapp',
+    to,
+    type: 'template',
+    template: {
+      name: templateName,
+      language: { code: languageCode },
+    },
+  };
+  if (components) {
+    requestBody.template.components = components;
+  }
+  console.log('[whatsapp.sendTemplateMessage] phoneNumberId:', phoneNumberId);
+  console.log('[whatsapp.sendTemplateMessage] to:', to);
+  console.log('[whatsapp.sendTemplateMessage] templateName:', templateName);
+  console.log('[whatsapp.sendTemplateMessage] request body:', JSON.stringify(requestBody));
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(requestBody),
+  });
+  console.log('[whatsapp.sendTemplateMessage] response status:', response.status);
+
+  if (!response.ok) {
+    const error = await response.text();
+    console.log('[whatsapp.sendTemplateMessage] error response:', error);
+    throw new Error(`Send template message failed: ${error}`);
+  }
+
+  const data = (await response.json()) as { messages: { id: string }[] };
+  console.log('[whatsapp.sendTemplateMessage] response body:', JSON.stringify(data));
+  const waMessageId = data.messages[0].id;
+  console.log('[whatsapp.sendTemplateMessage] waMessageId:', waMessageId);
+  return waMessageId;
+}

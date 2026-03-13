@@ -5,6 +5,7 @@ import webhookRoutes from './routes/webhook';
 import authRoutes from './routes/auth';
 import accountRoutes from './routes/account';
 import conversationsRoutes from './routes/conversations';
+import templatesRoutes from './routes/templates';
 
 dotenv.config();
 
@@ -31,6 +32,7 @@ app.use('/', webhookRoutes);
 app.use('/', authRoutes);
 app.use('/', accountRoutes);
 app.use('/', conversationsRoutes);
+app.use('/', templatesRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
