@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import prisma from '../db';
-import { sendTextMessage } from '../services/whatsapp';
+import { sendTextMessage, sendInteractiveMessage } from '../services/whatsapp';
 
 const router = Router();
 
@@ -55,13 +55,8 @@ router.get('/api/conversations/:id/messages', async (req: Request<{ id: string }
 router.post('/api/conversations/:id/messages', async (req: Request<{ id: string }>, res: Response) => {
   try {
     const conversationId = parseInt(req.params.id);
-    const { content } = req.body;
-    console.log('[conversations.POST message] conversationId:', conversationId, 'content:', content);
-
-    if (!content) {
-      res.status(400).json({ error: 'content is required' });
-      return;
-    }
+    const { content, type, interactive } = req.body;
+    console.log('[conversations.POST message] conversationId:', conversationId, 'type:', type || 'text', 'content:', content);
 
     // Get conversation and account
     const conversation = await prisma.conversation.findUnique({
@@ -80,14 +75,37 @@ router.post('/api/conversations/:id/messages', async (req: Request<{ id: string 
       return;
     }
 
-    // Send via WhatsApp Cloud API
-    const waMessageId = await sendTextMessage(
-      account.phoneNumberId,
-      account.accessToken,
-      conversation.waId,
-      content
-    );
-    console.log('[conversations.POST message] waMessageId:', waMessageId);
+    let waMessageId: string;
+    let messageType: 'text' | 'interactive' = 'text';
+    let metadata: any = null;
+    let messageContent = content;
+
+    if (type === 'interactive' && interactive) {
+      // Send interactive message
+      waMessageId = await sendInteractiveMessage(
+        account.phoneNumberId,
+        account.accessToken,
+        conversation.waId,
+        interactive
+      );
+      messageType = 'interactive';
+      metadata = interactive;
+      messageContent = interactive.body?.text || content || '[Interactive message]';
+      console.log('[conversations.POST message] interactive waMessageId:', waMessageId);
+    } else {
+      // Send text message (default)
+      if (!content) {
+        res.status(400).json({ error: 'content is required' });
+        return;
+      }
+      waMessageId = await sendTextMessage(
+        account.phoneNumberId,
+        account.accessToken,
+        conversation.waId,
+        content
+      );
+      console.log('[conversations.POST message] text waMessageId:', waMessageId);
+    }
 
     // Store outbound message
     const message = await prisma.message.create({
@@ -95,7 +113,9 @@ router.post('/api/conversations/:id/messages', async (req: Request<{ id: string 
         conversationId,
         waMessageId,
         direction: 'outbound',
-        content,
+        type: messageType,
+        content: messageContent,
+        metadata,
         status: 'sent',
         timestamp: new Date(),
       },

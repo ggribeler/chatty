@@ -213,3 +213,43 @@ export async function sendTemplateMessage(
   console.log('[whatsapp.sendTemplateMessage] waMessageId:', waMessageId);
   return waMessageId;
 }
+
+export async function sendInteractiveMessage(
+  phoneNumberId: string,
+  accessToken: string,
+  to: string,
+  interactive: any
+): Promise<string> {
+  const url = `${GRAPH_API_URL}/${phoneNumberId}/messages`;
+  const requestBody = {
+    messaging_product: 'whatsapp',
+    to,
+    type: 'interactive',
+    interactive,
+  };
+  console.log('[whatsapp.sendInteractiveMessage] phoneNumberId:', phoneNumberId);
+  console.log('[whatsapp.sendInteractiveMessage] to:', to);
+  console.log('[whatsapp.sendInteractiveMessage] request body:', JSON.stringify(requestBody));
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(requestBody),
+  });
+  console.log('[whatsapp.sendInteractiveMessage] response status:', response.status);
+
+  if (!response.ok) {
+    const error = await response.text();
+    console.log('[whatsapp.sendInteractiveMessage] error response:', error);
+    throw new Error(`Send interactive message failed: ${error}`);
+  }
+
+  const data = (await response.json()) as { messages: { id: string }[] };
+  console.log('[whatsapp.sendInteractiveMessage] response body:', JSON.stringify(data));
+  const waMessageId = data.messages[0].id;
+  console.log('[whatsapp.sendInteractiveMessage] waMessageId:', waMessageId);
+  return waMessageId;
+}
