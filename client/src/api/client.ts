@@ -41,15 +41,40 @@ export interface Conversation {
   lastMessage: string | null;
 }
 
+export type MessageType = 'text' | 'template' | 'interactive' | 'button_reply' | 'list_reply';
+
 export interface Message {
   id: number;
   conversationId: number;
   waMessageId: string;
   direction: 'inbound' | 'outbound';
+  type?: MessageType;
   content: string;
+  metadata?: any;
   status: string | null;
   timestamp: string;
   createdAt: string;
+}
+
+export interface TemplateComponent {
+  type: string;
+  format?: string;
+  text?: string;
+  buttons?: Array<{
+    type: string;
+    text: string;
+    url?: string;
+    phone_number?: string;
+  }>;
+}
+
+export interface MessageTemplate {
+  id: string;
+  name: string;
+  language: string;
+  status: string;
+  category: string;
+  components: TemplateComponent[];
 }
 
 export const api = {
@@ -75,5 +100,24 @@ export const api = {
     request<Message>(`/api/conversations/${conversationId}/messages`, {
       method: 'POST',
       body: JSON.stringify({ content }),
+    }),
+
+  getTemplates: () => request<MessageTemplate[]>('/api/templates'),
+
+  sendTemplate: (data: {
+    conversationId: number;
+    templateName: string;
+    languageCode: string;
+    components?: any[];
+  }) =>
+    request<Message>('/api/templates/send', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  sendInteractive: (conversationId: number, interactive: any) =>
+    request<Message>(`/api/conversations/${conversationId}/messages`, {
+      method: 'POST',
+      body: JSON.stringify({ type: 'interactive', interactive }),
     }),
 };
