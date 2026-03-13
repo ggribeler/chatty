@@ -36,12 +36,22 @@ enum MessageDirection {
   outbound
 }
 
+enum MessageType {
+  text
+  template
+  interactive
+  button_reply
+  list_reply
+}
+
 model Message {
   id             Int              @id @default(autoincrement())
   conversationId Int              @map("conversation_id")
   waMessageId    String           @unique @map("wa_message_id")
   direction      MessageDirection
+  type           MessageType      @default(text)
   content        String
+  metadata       Json?
   status         String?
   timestamp      DateTime
   createdAt      DateTime         @default(now()) @map("created_at")
